@@ -1,0 +1,18 @@
+{
+  "name": "get_vk_image",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "maxorik",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.4.0",
+    "commonjs-variables-for-esmodules": "^1.1.0",
+    "telegraf": "^4.12.2"
+  },
+  "type": "module"
+}
