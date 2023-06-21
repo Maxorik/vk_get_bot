@@ -26,20 +26,43 @@ const apiTypes = {
     }
 };
 
+// резервный контент на случай простоя 
+const reservContent = [];
+
 async function run() {
-    let isPost = false;
+    let isPost = false; // постили ли контент в этот интервал
+
     for (let key in apiTypes) {
         const post = await axios.get(apiTypes[key].url).then(response => {
             const imageId = response.data.response.items[0].id;
+
+            // если пост еще не был ранее опубликован, получаем его содержимое
             if(imageId !== apiTypes[key].lastId) {
                 const payload = getContent(response);
                 apiTypes[key].lastId = imageId;
-                isPost = true;
-                bot.telegram.sendMediaGroup(config.tg_group_cherry, payload);
+
+                // если в этот интервал публикация уже была, запоминаем контент, чтобы выслать его в случае простоя
+                if (isPost) {
+                    if (reservContent.length < 20) {
+                        const isReserved = reservContent.find(item => item[0].media === payload[0].media);
+                        !isReserved && reservContent.push(payload);
+                    };
+                } 
+
+                // публикуем, если контент уникальный
+                else {
+                    isPost = true;
+                    bot.telegram.sendMediaGroup(config.tg_group_cherry, payload);
+                }
             }
         });
-        if(isPost) break;
-    }
+    };
+
+    // простой постинга - берем контент из резерва
+    if (!isPost && reservContent.length > 0) {
+        bot.telegram.sendMediaGroup(config.tg_group_cherry, reservContent[0]);
+        reservContent.shift();
+    };
 
     setTimeout(run, intervalMs);
 };
